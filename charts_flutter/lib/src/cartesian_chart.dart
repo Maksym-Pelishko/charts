@@ -14,6 +14,7 @@
 // limitations under the License.
 
 import 'dart:collection' show LinkedHashMap;
+import 'package:flutter/material.dart';
 import 'package:meta/meta.dart' show immutable, protected;
 
 import 'package:charts_common/common.dart' as common
@@ -40,36 +41,35 @@ abstract class CartesianChart<D> extends BaseChart<D> {
   final LinkedHashMap<String, common.NumericAxisSpec> disjointMeasureAxes;
   final bool flipVerticalAxis;
 
-  CartesianChart(
-    List<common.Series<dynamic, D>> seriesList, {
-    bool animate,
-    Duration animationDuration,
-    this.domainAxis,
-    this.primaryMeasureAxis,
-    this.secondaryMeasureAxis,
-    this.disjointMeasureAxes,
-    common.SeriesRendererConfig<D> defaultRenderer,
-    List<common.SeriesRendererConfig<D>> customSeriesRenderers,
-    List<ChartBehavior> behaviors,
-    List<SelectionModelConfig<D>> selectionModels,
-    common.RTLSpec rtlSpec,
-    bool defaultInteractions = true,
-    LayoutConfig layoutConfig,
-    UserManagedState userManagedState,
-    this.flipVerticalAxis,
-  }) : super(
-          seriesList,
-          animate: animate,
-          animationDuration: animationDuration,
-          defaultRenderer: defaultRenderer,
-          customSeriesRenderers: customSeriesRenderers,
-          behaviors: behaviors,
-          selectionModels: selectionModels,
-          rtlSpec: rtlSpec,
-          defaultInteractions: defaultInteractions,
-          layoutConfig: layoutConfig,
-          userManagedState: userManagedState,
-        );
+  CartesianChart(List<common.Series<dynamic, D>> seriesList,
+      {bool animate,
+      Duration animationDuration,
+      this.domainAxis,
+      this.primaryMeasureAxis,
+      this.secondaryMeasureAxis,
+      this.disjointMeasureAxes,
+      common.SeriesRendererConfig<D> defaultRenderer,
+      List<common.SeriesRendererConfig<D>> customSeriesRenderers,
+      List<ChartBehavior> behaviors,
+      List<SelectionModelConfig<D>> selectionModels,
+      common.RTLSpec rtlSpec,
+      bool defaultInteractions = true,
+      LayoutConfig layoutConfig,
+      UserManagedState userManagedState,
+      this.flipVerticalAxis,
+      Key key})
+      : super(seriesList,
+            animate: animate,
+            animationDuration: animationDuration,
+            defaultRenderer: defaultRenderer,
+            customSeriesRenderers: customSeriesRenderers,
+            behaviors: behaviors,
+            selectionModels: selectionModels,
+            rtlSpec: rtlSpec,
+            defaultInteractions: defaultInteractions,
+            layoutConfig: layoutConfig,
+            userManagedState: userManagedState,
+            key: key);
 
   @override
   void updateCommonChart(common.BaseChart baseChart, BaseChart oldWidget,

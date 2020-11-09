@@ -163,6 +163,26 @@ abstract class BaseTickDrawStrategy<D> implements TickDrawStrategy<D> {
   }
 
   @override
+  List<Tick<D>> getTicksWithoutCollides(
+      List<Tick<D>> ticks, AxisOrientation orientation) {
+    if (ticks == null) return null;
+    // TODO: Collision analysis for rotated labels are not
+    // supported yet.
+    if (labelRotation != 0) return ticks;
+
+    List<Tick<D>> result = List();
+    Tick<D> previous;
+    ticks.forEach((element) {
+      if (previous == null || !_isCollides(previous, element, orientation)) {
+        previous = element;
+        result.add(element);
+      }
+    });
+
+    return result;
+  }
+
+  @override
   CollisionReport collides(List<Tick<D>> ticks, AxisOrientation orientation) {
     // TODO: Collision analysis for rotated labels are not
     // supported yet.
@@ -257,6 +277,38 @@ abstract class BaseTickDrawStrategy<D> implements TickDrawStrategy<D> {
 
     return CollisionReport(
         ticksCollide: false, ticks: ticks, alternateTicksUsed: false);
+  }
+
+  bool _isCollides(Tick<D> first, Tick<D> second, AxisOrientation orientation) {
+    final vertical = orientation == AxisOrientation.left ||
+        orientation == AxisOrientation.right;
+    final firstTickSize = second.textElement.measurement;
+    final secondTickSize = second.textElement.measurement;
+
+    if (vertical) {
+      final firstAdjustedHeight =
+          firstTickSize.verticalSliceWidth + minimumPaddingBetweenLabelsPx;
+      final secondAdjustedHeight =
+          secondTickSize.verticalSliceWidth + minimumPaddingBetweenLabelsPx;
+
+      if (tickLabelAnchor == TickLabelAnchor.inside) {
+        if (identical(first, second)) {
+          return false;
+        } else {
+          return (first.locationPx + firstAdjustedHeight / 2) >
+              (second.locationPx - secondAdjustedHeight / 2);
+        }
+      } else {
+        return (first.locationPx + firstAdjustedHeight) > second.locationPx;
+      }
+    } else {
+      final firstAdjustedWidth =
+          firstTickSize.horizontalSliceWidth + minimumPaddingBetweenLabelsPx;
+      final secondAdjustedWidth =
+          secondTickSize.horizontalSliceWidth + minimumPaddingBetweenLabelsPx;
+      return (first.locationPx + firstAdjustedWidth / 2) >
+          (second.locationPx - secondAdjustedWidth / 2);
+    }
   }
 
   @override

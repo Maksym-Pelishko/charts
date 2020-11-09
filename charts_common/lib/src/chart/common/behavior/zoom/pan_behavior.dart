@@ -137,8 +137,13 @@ class PanBehavior<D> implements ChartBehavior<D> {
     return true;
   }
 
+  bool _isDragging = false;
+
   @protected
   bool onDragUpdate(Point<double> localPosition, double scale) {
+    if(_isDragging)
+      return true;
+    _isDragging = true;
     if (!_isPanning || _lastPosition == null || _chart == null) {
       return false;
     }
@@ -173,6 +178,7 @@ class PanBehavior<D> implements ChartBehavior<D> {
     _lastPosition = localPosition;
 
     _chart.redraw(skipAnimation: true, skipLayout: true);
+    _isDragging = false;
     return true;
   }
 

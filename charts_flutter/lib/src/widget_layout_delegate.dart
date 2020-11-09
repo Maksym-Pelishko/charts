@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:math';
 import 'dart:ui' show Offset;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -37,59 +38,61 @@ class WidgetLayoutDelegate extends MultiChildLayoutDelegate {
 
   @override
   void performLayout(Size size) {
-    // TODO: Change this to a layout manager that supports more
-    // than one buildable behavior that changes chart size. Remove assert when
-    // this is possible.
-    assert(idAndBehavior.keys.isEmpty || idAndBehavior.keys.length == 1);
+    // Size available for behaviours.
+    var chartTopPadding = 0.0;
+    var chartBottomPadding = 0.0;
+    var chartLeftPadding = 0.0;
+    var chartRightPadding = 0.0;
 
-    // Size available for the chart widget.
-    var availableWidth = size.width;
-    var availableHeight = size.height;
-    var chartOffset = Offset.zero;
+    Map<String, Size> behaviorSizes = Map();
+    for (String behaviorID in idAndBehavior.keys)
+      if (behaviorID != null) {
+        if (hasChild(behaviorID)) {
+          final leftPosition = isRTL
+              ? common.BehaviorPosition.end
+              : common.BehaviorPosition.start;
+          final rightPosition = isRTL
+              ? common.BehaviorPosition.start
+              : common.BehaviorPosition.end;
+          final behaviorPosition = idAndBehavior[behaviorID].position;
 
-    // Measure the first buildable behavior.
-    final behaviorID =
-        idAndBehavior.keys.isNotEmpty ? idAndBehavior.keys.first : null;
-    var behaviorSize = Size.zero;
-    if (behaviorID != null) {
-      if (hasChild(behaviorID)) {
-        final leftPosition =
-            isRTL ? common.BehaviorPosition.end : common.BehaviorPosition.start;
-        final rightPosition =
-            isRTL ? common.BehaviorPosition.start : common.BehaviorPosition.end;
-        final behaviorPosition = idAndBehavior[behaviorID].position;
-
-        behaviorSize = layoutChild(behaviorID, new BoxConstraints.loose(size));
-        if (behaviorPosition == common.BehaviorPosition.top) {
-          chartOffset = new Offset(0.0, behaviorSize.height);
-          availableHeight -= behaviorSize.height;
-        } else if (behaviorPosition == common.BehaviorPosition.bottom) {
-          availableHeight -= behaviorSize.height;
-        } else if (behaviorPosition == leftPosition) {
-          chartOffset = new Offset(behaviorSize.width, 0.0);
-          availableWidth -= behaviorSize.width;
-        } else if (behaviorPosition == rightPosition) {
-          availableWidth -= behaviorSize.width;
+          var behaviorSize =
+              layoutChild(behaviorID, new BoxConstraints.loose(size));
+          behaviorSizes[behaviorID] = behaviorSize;
+          if (behaviorPosition == common.BehaviorPosition.top) {
+            chartTopPadding = max(behaviorSize.height, chartTopPadding);
+          } else if (behaviorPosition == common.BehaviorPosition.bottom) {
+            chartBottomPadding = max(behaviorSize.height, chartBottomPadding);
+          } else if (behaviorPosition == leftPosition) {
+            chartLeftPadding = max(behaviorSize.width, chartLeftPadding);
+          } else if (behaviorPosition == rightPosition) {
+            chartRightPadding = max(behaviorSize.width, chartRightPadding);
+          }
         }
       }
-    }
 
     // Layout chart.
-    final chartSize = new Size(availableWidth, availableHeight);
+    final chartSize = new Size(
+        size.width - chartLeftPadding - chartRightPadding,
+        size.height - chartTopPadding - chartBottomPadding);
     if (hasChild(chartID)) {
       layoutChild(chartID, new BoxConstraints.tight(chartSize));
-      positionChild(chartID, chartOffset);
+      positionChild(chartID, new Offset(chartLeftPadding, chartTopPadding));
     }
 
     // Position buildable behavior.
-    if (behaviorID != null) {
-      // TODO: Unable to relayout with new smaller width.
-      // In the delegate, all children are required to have layout called
-      // exactly once.
-      final behaviorOffset = _getBehaviorOffset(idAndBehavior[behaviorID],
-          behaviorSize: behaviorSize, chartSize: chartSize, isRTL: isRTL);
+    for (String behaviorID in idAndBehavior.keys) {
+      if (behaviorID != null) {
+        // TODO: Unable to relayout with new smaller width.
+        // In the delegate, all children are required to have layout called
+        // exactly once.
+        final behaviorOffset = _getBehaviorOffset(idAndBehavior[behaviorID],
+            behaviorSize: behaviorSizes[behaviorID],
+            chartSize: chartSize,
+            isRTL: isRTL);
 
-      positionChild(behaviorID, behaviorOffset);
+        positionChild(behaviorID, behaviorOffset);
+      }
     }
   }
 
@@ -133,6 +136,15 @@ class WidgetLayoutDelegate extends MultiChildLayoutDelegate {
         case _HorizontalJustification.right:
           behaviorOffset =
               new Offset(chartSize.width - behaviorSize.width, heightOffset);
+          break;
+        case _HorizontalJustification.middleDrawArea:
+          behaviorOffset = new Offset(
+              (chartSize.width - behaviorSize.width) / 2, heightOffset);
+          break;
+        case _HorizontalJustification.middle:
+          behaviorOffset = new Offset(
+              (behavior.drawAreaBounds.width - behaviorSize.width) / 2,
+              heightOffset);
           break;
       }
     } else if (behaviorPosition == common.BehaviorPosition.start ||
@@ -184,16 +196,20 @@ class WidgetLayoutDelegate extends MultiChildLayoutDelegate {
 
     switch (justification) {
       case common.OutsideJustification.startDrawArea:
-      case common.OutsideJustification.middleDrawArea:
         mappedJustification = isRTL
             ? _HorizontalJustification.rightDrawArea
             : _HorizontalJustification.leftDrawArea;
         break;
       case common.OutsideJustification.start:
-      case common.OutsideJustification.middle:
         mappedJustification = isRTL
             ? _HorizontalJustification.right
             : _HorizontalJustification.left;
+        break;
+      case common.OutsideJustification.middleDrawArea:
+        mappedJustification = _HorizontalJustification.middleDrawArea;
+        break;
+      case common.OutsideJustification.middle:
+        mappedJustification = _HorizontalJustification.middle;
         break;
       case common.OutsideJustification.endDrawArea:
         mappedJustification = isRTL
@@ -214,6 +230,8 @@ class WidgetLayoutDelegate extends MultiChildLayoutDelegate {
 enum _HorizontalJustification {
   leftDrawArea,
   left,
+  middleDrawArea,
+  middle,
   rightDrawArea,
   right,
 }

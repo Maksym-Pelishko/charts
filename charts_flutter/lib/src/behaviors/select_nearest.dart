@@ -113,7 +113,8 @@ class SelectNearest extends ChartBehavior<common.SelectNearest> {
         eventTrigger: eventTrigger,
         expandToDomain: expandToDomain,
         selectClosestSeries: selectClosestSeries,
-        maximumDomainDistancePx: maximumDomainDistancePx);
+        maximumDomainDistancePx: maximumDomainDistancePx,
+        selectAcrossAllSeriesRendererComponents: false);
   }
 
   @override

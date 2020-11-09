@@ -62,6 +62,7 @@ class LayoutViewPaintOrder {
   static const linePointHighlighter = 110;
   static const slider = 150;
   static const chartTitle = 160;
+  static const zoomButtons = 170;
 }
 
 /// Standard layout position orders for all internal components.
@@ -76,6 +77,7 @@ class LayoutViewPositionOrder {
   static const axis = 20;
   static const legend = 30;
   static const chartTitle = 40;
+  static const zoomButtons = 50;
 }
 
 /// A configuration for margin (empty space) around a layout child view.

@@ -592,7 +592,7 @@ class OrdinalViewport {
   final String startingDomain;
   final int dataSize;
 
-  OrdinalViewport(this.startingDomain, this.dataSize);
+  OrdinalViewport([this.startingDomain, this.dataSize]);
 
   @override
   bool operator ==(Object other) {

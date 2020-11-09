@@ -31,6 +31,9 @@ abstract class TickDrawStrategy<D> {
   /// with location data and formatted labels.
   void decorateTicks(List<Tick<D>> ticks);
 
+  List<Tick<D>> getTicksWithoutCollides(
+      List<Tick<D>> ticks, AxisOrientation orientation);
+
   /// Returns a [CollisionReport] indicating if there are any collisions.
   CollisionReport collides(List<Tick<D>> ticks, AxisOrientation orientation);
 

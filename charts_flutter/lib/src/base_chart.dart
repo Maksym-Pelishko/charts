@@ -23,13 +23,14 @@ import 'package:charts_common/common.dart' as common
         Series,
         SeriesRendererConfig,
         SelectionModelType,
-        SelectionTrigger;
+        SelectionTrigger,
+        ChartBehavior;
 import 'behaviors/select_nearest.dart' show SelectNearest;
 import 'package:meta/meta.dart' show immutable, required;
 import 'behaviors/chart_behavior.dart'
     show ChartBehavior, ChartStateBehavior, GestureType;
 import 'selection_model_config.dart' show SelectionModelConfig;
-import 'package:flutter/material.dart' show StatefulWidget;
+import 'package:flutter/material.dart' show Key, StatefulWidget;
 import 'base_chart_state.dart' show BaseChartState;
 import 'user_managed_state.dart' show UserManagedState;
 
@@ -79,10 +80,12 @@ abstract class BaseChart<D> extends StatefulWidget {
       this.rtlSpec,
       this.defaultInteractions = true,
       this.layoutConfig,
-      this.userManagedState})
+      this.userManagedState,
+      Key key})
       : this.animate = animate ?? true,
         this.animationDuration =
-            animationDuration ?? const Duration(milliseconds: 300);
+            animationDuration ?? const Duration(milliseconds: 300),
+        super(key: key);
 
   @override
   BaseChartState<D> createState() => new BaseChartState<D>();
@@ -154,8 +157,10 @@ abstract class BaseChart<D> extends StatefulWidget {
       if (!behaviorList.remove(addedBehavior)) {
         final role = addedBehavior.role;
         chartState.addedBehaviorWidgets.remove(addedBehavior);
+        common.ChartBehavior oldBehavior =
+            chartState.addedCommonBehaviorsByRole[role];
         chartState.addedCommonBehaviorsByRole.remove(role);
-        chart.removeBehavior(chartState.addedCommonBehaviorsByRole[role]);
+        chart.removeBehavior(oldBehavior);
         chartState.markChartDirty();
       }
     }
@@ -184,7 +189,7 @@ abstract class BaseChart<D> extends StatefulWidget {
     behaviors.add(new SelectNearest(
         eventTrigger: common.SelectionTrigger.tap,
         selectionModelType: common.SelectionModelType.info,
-        expandToDomain: true,
+        expandToDomain: false,
         selectClosestSeries: true));
   }
 

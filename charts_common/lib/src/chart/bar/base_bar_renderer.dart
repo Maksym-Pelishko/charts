@@ -470,15 +470,19 @@ abstract class BaseBarRenderer<D, R extends BaseBarRendererElement,
       }
     });
 
+    ///TODO: this part takes too much time, it slows chart rendering for huge
+    ///data amount, need to fix that
+    //var stTime = DateTime.now();
     // Animate out bars that don't exist anymore.
-    _barStackMap.forEach((String key, List<B> barStackList) {
+    /*_barStackMap.forEach((String key, List<B> barStackList) {
       for (var barIndex = 0; barIndex < barStackList.length; barIndex++) {
         final bar = barStackList[barIndex];
         if (_currentKeys.contains(bar.key) != true) {
           bar.animateOut();
         }
       }
-    });
+    });*/
+    //print(DateTime.now().difference(stTime));
   }
 
   /// Generates a [BaseAnimatedBar] to represent the previous and current state

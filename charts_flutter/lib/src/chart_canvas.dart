@@ -36,7 +36,7 @@ import 'canvas/polygon_painter.dart' show PolygonPainter;
 
 class ChartCanvas implements common.ChartCanvas {
   /// Pixels to allow to overdraw above the draw area that fades to transparent.
-  static const double rect_top_gradient_pixels = 5;
+  static const double rect_top_gradient_pixels = 15;
 
   final Canvas canvas;
   final common.GraphicsFactory graphicsFactory;
@@ -144,6 +144,14 @@ class ChartCanvas implements common.ChartCanvas {
     );
   }
 
+  ui.Gradient _createGradient(Rectangle bounds, List<common.Color> colors) {
+    return new ui.Gradient.linear(
+      new Offset(bounds.left, bounds.top),
+      new Offset(bounds.left + bounds.width, bounds.top + bounds.height),
+      colors.map((e) => Color.fromARGB(e.a, e.r, e.g, e.b)).toList(),
+    );
+  }
+
   @override
   void drawRect(Rectangle<num> bounds,
       {common.Color fill,
@@ -168,7 +176,27 @@ class ChartCanvas implements common.ChartCanvas {
         _drawForwardHatchPattern(fillRectBounds, canvas,
             fill: fill, drawAreaBounds: drawAreaBounds);
         break;
+      case common.FillPatternType.gradient:
+        _paint.style = PaintingStyle.fill;
+        _paint.shader = _createGradient(
+            Rectangle.fromPoints(
+                drawAreaBounds.topLeft, drawAreaBounds.topRight),
+            [
+              common.Color.fromHex(code: "#a8eb34"),
+              common.Color.fromHex(code: "#34a2eb")
+            ]);
 
+        // TODO: if over sized(happens, when axis scale not fitted to max draw
+        // element value), need to show vertical gradient to infinity(drawn as
+        // transparent), like in fill pattern type
+        bool isOverSized =
+            drawAreaBounds != null && bounds.top < drawAreaBounds.top;
+        Rectangle<num> fittedBounds = isOverSized
+            ? Rectangle(fillRectBounds.left, drawAreaBounds.top,
+                fillRectBounds.width, fillRectBounds.height)
+            : fillRectBounds;
+        canvas.drawRect(_getRect(fittedBounds), _paint);
+        break;
       case common.FillPatternType.solid:
       default:
         // Use separate rect for drawing stroke

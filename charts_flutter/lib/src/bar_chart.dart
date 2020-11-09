@@ -26,6 +26,7 @@ import 'package:charts_common/common.dart' as common
         RTLSpec,
         Series,
         SeriesRendererConfig;
+import 'package:flutter/material.dart';
 import 'behaviors/domain_highlighter.dart' show DomainHighlighter;
 import 'behaviors/chart_behavior.dart' show ChartBehavior;
 import 'package:meta/meta.dart' show immutable;
@@ -40,47 +41,46 @@ class BarChart extends CartesianChart<String> {
   final bool vertical;
   final common.BarRendererDecorator barRendererDecorator;
 
-  BarChart(
-    List<common.Series<dynamic, String>> seriesList, {
-    bool animate,
-    Duration animationDuration,
-    common.AxisSpec domainAxis,
-    common.AxisSpec primaryMeasureAxis,
-    common.AxisSpec secondaryMeasureAxis,
-    LinkedHashMap<String, common.NumericAxisSpec> disjointMeasureAxes,
-    common.BarGroupingType barGroupingType,
-    common.BarRendererConfig<String> defaultRenderer,
-    List<common.SeriesRendererConfig<String>> customSeriesRenderers,
-    List<ChartBehavior> behaviors,
-    List<SelectionModelConfig<String>> selectionModels,
-    common.RTLSpec rtlSpec,
-    this.vertical = true,
-    bool defaultInteractions = true,
-    LayoutConfig layoutConfig,
-    UserManagedState<String> userManagedState,
-    this.barRendererDecorator,
-    bool flipVerticalAxis,
-  }) : super(
-          seriesList,
-          animate: animate,
-          animationDuration: animationDuration,
-          domainAxis: domainAxis,
-          primaryMeasureAxis: primaryMeasureAxis,
-          secondaryMeasureAxis: secondaryMeasureAxis,
-          disjointMeasureAxes: disjointMeasureAxes,
-          defaultRenderer: defaultRenderer ??
-              new common.BarRendererConfig<String>(
-                  groupingType: barGroupingType,
-                  barRendererDecorator: barRendererDecorator),
-          customSeriesRenderers: customSeriesRenderers,
-          behaviors: behaviors,
-          selectionModels: selectionModels,
-          rtlSpec: rtlSpec,
-          defaultInteractions: defaultInteractions,
-          layoutConfig: layoutConfig,
-          userManagedState: userManagedState,
-          flipVerticalAxis: flipVerticalAxis,
-        );
+  BarChart(List<common.Series<dynamic, String>> seriesList,
+      {bool animate,
+      Duration animationDuration,
+      common.AxisSpec domainAxis,
+      common.AxisSpec primaryMeasureAxis,
+      common.AxisSpec secondaryMeasureAxis,
+      LinkedHashMap<String, common.NumericAxisSpec> disjointMeasureAxes,
+      common.BarGroupingType barGroupingType,
+      common.BarRendererConfig<String> defaultRenderer,
+      List<common.SeriesRendererConfig<String>> customSeriesRenderers,
+      List<ChartBehavior> behaviors,
+      List<SelectionModelConfig<String>> selectionModels,
+      common.RTLSpec rtlSpec,
+      this.vertical = true,
+      bool defaultInteractions = true,
+      LayoutConfig layoutConfig,
+      UserManagedState<String> userManagedState,
+      this.barRendererDecorator,
+      bool flipVerticalAxis,
+      Key key})
+      : super(seriesList,
+            animate: animate,
+            animationDuration: animationDuration,
+            domainAxis: domainAxis,
+            primaryMeasureAxis: primaryMeasureAxis,
+            secondaryMeasureAxis: secondaryMeasureAxis,
+            disjointMeasureAxes: disjointMeasureAxes,
+            defaultRenderer: defaultRenderer ??
+                new common.BarRendererConfig<String>(
+                    groupingType: barGroupingType,
+                    barRendererDecorator: barRendererDecorator),
+            customSeriesRenderers: customSeriesRenderers,
+            behaviors: behaviors,
+            selectionModels: selectionModels,
+            rtlSpec: rtlSpec,
+            defaultInteractions: defaultInteractions,
+            layoutConfig: layoutConfig,
+            userManagedState: userManagedState,
+            flipVerticalAxis: flipVerticalAxis,
+            key: key);
 
   @override
   common.BarChart createCommonChart(BaseChartState chartState) {

@@ -67,6 +67,11 @@ class NoneDrawStrategy<D> implements TickDrawStrategy<D> {
   }
 
   @override
+  List<Tick<D>> getTicksWithoutCollides(
+          List<Tick<D>> ticks, AxisOrientation orientation) =>
+      ticks;
+
+  @override
   CollisionReport collides(List<Tick> ticks, AxisOrientation orientation) =>
       CollisionReport(ticksCollide: false, ticks: ticks);
 

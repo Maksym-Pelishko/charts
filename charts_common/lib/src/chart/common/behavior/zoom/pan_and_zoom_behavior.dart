@@ -14,7 +14,11 @@
 // limitations under the License.
 
 import 'dart:math' show min, max, Point;
+import 'dart:math';
 
+import 'package:charts_common/src/chart/common/chart_canvas.dart';
+import 'package:charts_common/src/chart/layout/layout_view.dart';
+import 'package:charts_common/src/common/graphics_factory.dart';
 import 'package:meta/meta.dart' show protected;
 
 import 'pan_behavior.dart';
@@ -30,7 +34,7 @@ import 'panning_tick_provider.dart' show PanningTickProviderMode;
 ///
 /// Panning is supported by clicking and dragging the mouse for web, or tapping
 /// and dragging on the chart for mobile devices.
-class PanAndZoomBehavior<D> extends PanBehavior<D> {
+class PanAndZoomBehavior<D> extends PanBehavior<D> implements LayoutView {
   @override
   String get role => 'PanAndZoom';
 
@@ -43,14 +47,15 @@ class PanAndZoomBehavior<D> extends PanBehavior<D> {
   /// Current zoom scaling factor for the behavior.
   double _scalingFactor = 1.0;
 
+  /// Minimum amount of any data points/bars or other on max scale
+  double _minDataAmountForMaxScale = 3;
+
   /// Minimum scalingFactor to prevent zooming out beyond the data range.
   final _minScalingFactor = 1.0;
 
-  /// Maximum scalingFactor to prevent zooming in so far that no data is
-  /// visible.
-  ///
-  /// TODO: Dynamic max based on data range?
-  final _maxScalingFactor = 5.0;
+  Rectangle<int> _componentBounds;
+  Rectangle<int> _drawAreaBounds;
+  GraphicsFactory _graphicsFactory;
 
   @override
   bool onDragStart(Point<double> localPosition) {
@@ -89,22 +94,9 @@ class PanAndZoomBehavior<D> extends PanBehavior<D> {
       return false;
     }
 
-    // This is set during onDragUpdate and NOT onDragStart because we don't yet
-    // know during onDragStart whether pan/zoom behavior is panning or zooming.
-    // During zoom in / zoom out, domain tick provider set to return existing
-    // cached ticks.
-    domainAxisTickProvider.mode = PanningTickProviderMode.useCachedTicks;
-
     // Clamp the scale to prevent zooming out beyond the range of the data, or
     // zooming in so far that we show nothing useful.
-    final newScalingFactor =
-        min(max(_scalingFactor * scale, _minScalingFactor), _maxScalingFactor);
-
-    domainAxis.setViewportSettings(
-        newScalingFactor, domainAxis.viewportTranslatePx,
-        drawAreaWidth: chart.drawAreaBounds.width);
-
-    chart.redraw(skipAnimation: true, skipLayout: true);
+    changeScale(calcNewScalingFactor(_scalingFactor * scale));
 
     return true;
   }
@@ -116,4 +108,70 @@ class PanAndZoomBehavior<D> extends PanBehavior<D> {
 
     return super.onDragEnd(localPosition, scale, pixelsPerSec);
   }
+
+  double calcNewScalingFactor(double scale) {
+    double maxScale = (chart.domainAxis.range.width /
+        (chart.domainAxis.stepSize /
+            chart.domainAxis.scale.viewportScalingFactor)) /
+        _minDataAmountForMaxScale;
+    return min(
+        max(scale, _minScalingFactor), maxScale);
+  }
+
+  changeScale(
+      double newScalingFactor,
+      {double additionalViewportOffset = 0,
+      bool isAnimated = false}) {
+    // This is set during onDragUpdate and NOT onDragStart because we don't yet
+    // know during onDragStart whether pan/zoom behavior is panning or zooming.
+    // During zoom in / zoom out, domain tick provider set to return existing
+    // cached ticks.
+    domainAxisTickProvider.mode = PanningTickProviderMode.useCachedTicks;
+
+    final domainAxis = chart.domainAxis;
+
+    domainAxis.setViewportSettings(newScalingFactor,
+        domainAxis.viewportTranslatePx + additionalViewportOffset,
+        drawAreaWidth: chart.drawAreaBounds.width);
+
+    chart.redraw(skipAnimation: !isAnimated, skipLayout: true);
+  }
+
+  @override
+  GraphicsFactory get graphicsFactory => _graphicsFactory;
+
+  @override
+  set graphicsFactory(GraphicsFactory value) {
+    _graphicsFactory = value;
+  }
+
+  @override
+  Rectangle<int> get componentBounds => _componentBounds;
+
+  @override
+  bool get isSeriesRenderer => false;
+
+  Rectangle<int> get drawAreaBounds => _drawAreaBounds;
+
+  @override
+  void layout(Rectangle<int> componentBounds, Rectangle<int> drawAreaBounds) {
+    _componentBounds = componentBounds;
+    _drawAreaBounds = drawAreaBounds;
+  }
+
+  @override
+  LayoutViewConfig get layoutConfig {
+    return LayoutViewConfig(
+        position: LayoutPosition.DrawArea,
+        positionOrder: LayoutViewPositionOrder.zoomButtons,
+        paintOrder: LayoutViewPaintOrder.zoomButtons);
+  }
+
+  @override
+  ViewMeasuredSizes measure(int maxWidth, int maxHeight) {
+    return ViewMeasuredSizes(preferredWidth: 0, preferredHeight: 0);
+  }
+
+  @override
+  void paint(ChartCanvas canvas, double animationPercent) {}
 }

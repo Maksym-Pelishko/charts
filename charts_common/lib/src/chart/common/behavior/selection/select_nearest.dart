@@ -178,9 +178,17 @@ class SelectNearest<D> implements ChartBehavior<D> {
 
       if (maximumDomainDistancePx == null ||
           details[0].domainDistance <= maximumDomainDistancePx) {
-        seriesDatumList = expandToDomain
-            ? _expandToDomain(details.first)
-            : [SeriesDatum<D>(details.first.series, details.first.datum)];
+        if (expandToDomain)
+          seriesDatumList = _expandToDomain(details.first);
+        else {
+          int index = 0;
+          while (details.first.series.domainFn(index) != details.first.domain)
+            index++;
+          seriesDatumList = [
+            SeriesDatum<D>(details.first.series, details.first.datum,
+                index: index)
+          ];
+        }
 
         // Filter out points from overlay series.
         seriesDatumList

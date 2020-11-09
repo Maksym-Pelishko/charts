@@ -127,6 +127,8 @@ export 'src/chart/common/behavior/chart_title/chart_title.dart'
     show ChartTitle, ChartTitleDirection;
 export 'src/chart/common/behavior/domain_highlighter.dart'
     show DomainHighlighter;
+export 'src/chart/common/behavior/domain_tooltip.dart'
+    show DomainTooltip;
 export 'src/chart/common/behavior/domain_outliner.dart' show DomainOutliner;
 export 'src/chart/common/behavior/initial_selection.dart' show InitialSelection;
 export 'src/chart/common/behavior/legend/datum_legend.dart' show DatumLegend;
